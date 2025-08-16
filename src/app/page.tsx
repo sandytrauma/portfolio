@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Define the shape of a project object
 interface Project {
@@ -15,6 +15,13 @@ interface Project {
 interface ResumeSection {
   title: string;
   content: string[];
+}
+
+// Define the shape of a job profile tab
+interface JobProfileTab {
+  id: number;
+  title: string;
+  content: string;
 }
 
 // Mock data for the portfolio projects
@@ -54,25 +61,50 @@ const resumeContent: ResumeSection[] = [
     ],
   },
   {
-    title: 'Work Experience',
-    content: [
-      'Oct’14 to till date (DIMTS Delhi Integrated Multi-Modal Transit System (Joint Venture of Delhi Government))',
-      'Designation: Manager-Operation Road Transport',
-      'Staffing: 1500+',
-      'Vehicle Managed: 1150+',
-      'Core Manpower: 200',
-      'Driver & Conductor Strength: 4200',
-      'Industry: Public Transportation/ People Logistics & Supply Chain',
-      'Job Profile: Ensuring timely In-shedding/Out-shedding of buses, Mileage adherence, Minimizing Breakdown, Asset Management, Handling public grievances, Government Statutory compliance, Meeting with Government Officials, Ensure Inventory of spare parts, Internal & External ISO & Government Audits, Training of Depot Staff & Drivers, Ensuring Staff engagement programs, Maintaining & ensuring present ability of buses, Ensuring Monthly payment of Bills, Strict control on Depot Budget, Ensure Cleanliness, Maintenance, and Safety & Security of the administrative/operational area, Ensure Parking management, Proper checking of depot canteen, Implement and manage the billing module, Finalizing the Daily fleet summary, Issuing show cause notices, Preparation of reconciliation for arbitration cases, Maintenance of Database operations, Preparing Vehicle Out-shedding details, Tracking idle vehicle reports, Incident/accident management and reporting, Preparing operational data of Schedule, Actual & Missed KM, Preparing Schedule and actual Out-shedding Projection, Preparing bus-wise Infraction and curtailment data, Reconciliation of daily missed trips, Preparing Route & Day-wise performance, Real-time route monitoring, Real-time escalation to the bus operator and conductor agency, Training of fresh candidates for operations and MIS reports.',
-    ],
-  },
-  {
     title: 'Academic',
     content: [
       'Pursuing MBA in Operations & Logistics',
       'BA - English & Sociology',
-      
     ],
+  },
+];
+
+// Job profile data broken down into tabs
+const jobProfileTabs: JobProfileTab[] = [
+  {
+    id: 1,
+    title: 'Fleet Management',
+    content: 'Ensuring timely In-shedding/Out-shedding of buses, Mileage adherence, Minimizing Breakdown, and Asset Management.'
+  },
+  {
+    id: 2,
+    title: 'Public & Government Relations',
+    content: 'Handling public grievances, ensuring Government Statutory compliance, and meeting with Government Officials.'
+  },
+  {
+    id: 3,
+    title: 'Audits & Training',
+    content: 'Ensuring Inventory of spare parts, conducting Internal & External ISO & Government Audits, and providing Training to Depot Staff & Drivers.'
+  },
+  {
+    id: 4,
+    title: 'Staff & Budget Management',
+    content: 'Ensuring Staff engagement programs, Maintaining & ensuring present ability of buses, Ensuring Monthly payment of Bills, and Strict control on Depot Budget.'
+  },
+  {
+    id: 5,
+    title: 'Depot & Safety Management',
+    content: 'Ensuring Cleanliness, Maintenance, and Safety & Security of the administrative/operational area. Ensuring Parking management and Proper checking of depot canteen.'
+  },
+  {
+    id: 6,
+    title: 'MIS & Reporting',
+    content: 'Implementing and managing the billing module, Finalizing the Daily fleet summary, Issuing show cause notices, and Preparation of reconciliation for arbitration cases.'
+  },
+  {
+    id: 7,
+    title: 'Real-time Operations',
+    content: 'Maintaining Database operations, Preparing Vehicle Out-shedding details, Tracking idle vehicle reports, Incident/accident management and reporting, Real-time route monitoring, and Real-time escalation to the bus operator and conductor agency.'
   },
 ];
 
@@ -83,7 +115,20 @@ export default function App() {
   // State to track the currently selected project (only for the portfolio tab)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
-  // Handle the click event when a user selects a project
+  // State to track the currently selected job profile tab
+  const [selectedJobProfileTab, setSelectedJobProfileTab] = useState<JobProfileTab | null>(jobProfileTabs[0]);
+
+  // State to track which project descriptions are expanded
+  const [expandedProjects, setExpandedProjects] = useState<number[]>([]);
+
+  // Toggle the expansion of a project description
+  const toggleProjectExpansion = (id: number) => {
+    setExpandedProjects(prev =>
+      prev.includes(id) ? prev.filter(projectId => projectId !== id) : [...prev, id]
+    );
+  };
+
+  // Handle the click event when a user selects a project for preview
   const handleProjectSelect = (project: Project) => {
     setSelectedProject(project);
     setSelectedTab('portfolio');
@@ -94,10 +139,49 @@ export default function App() {
     setSelectedProject(null);
   };
 
+  // Framer Motion variants for resume sections and list items
+  const resumeVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0 },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: { opacity: 1, x: 0 },
+  };
+
+  // Framer Motion variants for collapsible description
+  const descriptionVariants = {
+    collapsed: { height: 0, opacity: 0, transition: { duration: 0.3 } },
+    expanded: { height: "auto", opacity: 1, transition: { duration: 0.3 } },
+  };
+
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-gray-900 text-gray-100 font-sans">
+    <div className="flex flex-col md:flex-row h-screen bg-gray-900 text-gray-100 font-inter">
       {/* Sidebar for navigation */}
-      <aside className="w-full md:w-1/3 lg:w-1/4 p-4 md:p-8 bg-gray-800 border-r border-gray-700 overflow-y-auto">
+      <aside 
+        className="w-full md:w-1/3 lg:w-1/4 p-4 md:p-8 bg-gray-800 border-r border-gray-700 overflow-y-auto"
+        // Style to hide scrollbar
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {/* Style tag to import the Inter font */}
+        <style dangerouslySetInnerHTML={{__html: `
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+          /* For WebKit browsers (Chrome, Safari) */
+          aside::-webkit-scrollbar {
+            display: none;
+          }
+        `}} />
+        
+        {/* Profile Image */}
+        <div className="flex justify-center mb-6">
+          <img 
+            src="/Profile_img2.jpg"
+            alt="Sandeep Kumar"
+            className="rounded-full h-32 w-32 object-cover border-4 border-indigo-400 shadow-xl"
+          />
+        </div>
+
         <h1 className="text-3xl lg:text-4xl font-bold mb-6 text-indigo-400">Sandeep Kumar</h1>
         <p className="text-sm mb-8 text-gray-400">
           An Administrative Professional with 11+ years of experience in Public Transport and Public Logistics.
@@ -134,17 +218,49 @@ export default function App() {
             {projects.map((project) => (
               <motion.li
                 key={project.id}
-                className={`p-4 rounded-xl cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105 hover:bg-gray-700 ${
-                  selectedProject?.id === project.id ? 'bg-indigo-600 shadow-lg' : 'bg-gray-700'
+                className={`p-4 rounded-xl cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105 ${
+                  selectedProject?.id === project.id ? 'bg-indigo-600 shadow-lg' : 'bg-gray-700 hover:bg-gray-600'
                 }`}
                 onClick={() => handleProjectSelect(project)}
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
-                <h2 className="text-xl font-semibold mb-1">{project.title}</h2>
-                <p className={`text-sm ${selectedProject?.id === project.id ? 'text-indigo-200' : 'text-gray-400'}`}>
-                  {project.description}
-                </p>
+                {/* Collapsible Project Heading */}
+                <div 
+                  onClick={(e) => { e.stopPropagation(); toggleProjectExpansion(project.id); }}
+                  className="flex justify-between items-center cursor-pointer"
+                >
+                  <h2 className={`text-xl font-semibold mb-1 ${selectedProject?.id === project.id ? 'text-white' : 'text-gray-200'}`}>{project.title}</h2>
+                  <motion.svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`h-5 w-5 transition-transform duration-300 ${expandedProjects.includes(project.id) ? 'transform rotate-180' : ''}`}
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </motion.svg>
+                </div>
+
+                {/* Collapsible Description */}
+                <AnimatePresence>
+                  {expandedProjects.includes(project.id) && (
+                    <motion.div
+                      initial="collapsed"
+                      animate="expanded"
+                      exit="collapsed"
+                      variants={descriptionVariants}
+                      className="overflow-hidden"
+                    >
+                      <p className={`text-sm pt-2 ${selectedProject?.id === project.id ? 'text-indigo-200' : 'text-gray-400'}`}>
+                        {project.description}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.li>
             ))}
           </motion.ul>
@@ -209,20 +325,75 @@ export default function App() {
               An Administrative Professional specialized in Administration & Transport management for Public Transport- Under State Government Since 2014. Proficient in handling multiple tasks and projects simultaneously in challenging environments.
             </p>
 
+            {/* General Resume Content */}
             {resumeContent.map((section, index) => (
-              <div key={index} className="mb-8">
+              <motion.div 
+                key={index} 
+                className="mb-8 p-6 rounded-lg bg-gray-700 shadow-xl"
+                initial="hidden"
+                animate="visible"
+                variants={resumeVariants}
+                transition={{ delay: index * 0.1, duration: 0.5 }}
+              >
                 <h2 className="text-2xl font-semibold text-white mb-4 border-b-2 border-indigo-400 pb-2">
                   {section.title}
                 </h2>
                 <ul className="list-none space-y-2">
                   {section.content.map((item, itemIndex) => (
-                    <li key={itemIndex} className="text-gray-300">
-                      {item}
-                    </li>
+                    <motion.li 
+                      key={itemIndex} 
+                      className="text-gray-300 flex items-start"
+                      variants={itemVariants}
+                      transition={{ delay: (index * 0.1) + (itemIndex * 0.05) + 0.5, duration: 0.3 }}
+                    >
+                      <span className="text-indigo-400 mr-2">•</span>
+                      <span>{item}</span>
+                    </motion.li>
                   ))}
                 </ul>
-              </div>
+              </motion.div>
             ))}
+
+            {/* Job Profile as Interactive Tabs */}
+            <motion.div 
+              className="mb-8 p-6 rounded-lg bg-gray-700 shadow-xl"
+              initial="hidden"
+              animate="visible"
+              variants={resumeVariants}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
+              <h2 className="text-2xl font-semibold text-white mb-4 border-b-2 border-indigo-400 pb-2">
+                Work Experience
+              </h2>
+              {/* Job Profile Tabs */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {jobProfileTabs.map((tab) => (
+                  <motion.button
+                    key={tab.id}
+                    onClick={() => setSelectedJobProfileTab(tab)}
+                    className={`p-3 rounded-lg font-medium transition-all duration-300 ease-in-out ${
+                      selectedJobProfileTab?.id === tab.id ? 'bg-indigo-500 text-white shadow-md' : 'bg-gray-800 text-gray-300 hover:bg-gray-600'
+                    }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {tab.title}
+                  </motion.button>
+                ))}
+              </div>
+              {/* Job Profile Content */}
+              {selectedJobProfileTab && (
+                <motion.div
+                  key={selectedJobProfileTab.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="mt-6 p-4 rounded-lg bg-gray-800 text-gray-200"
+                >
+                  <p>{selectedJobProfileTab.content}</p>
+                </motion.div>
+              )}
+            </motion.div>
           </motion.div>
         )}
       </main>
