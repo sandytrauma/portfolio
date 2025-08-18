@@ -175,7 +175,7 @@ export default function App() {
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-900 text-gray-100 font-inter">
       {/* Sidebar for navigation */}
       <aside
-        className="w-full md:w-1/3 lg:w-1/4 p-4 md:p-8 bg-gray-800 border-b md:border-b-0 md:border-r border-gray-700 overflow-y-auto"
+        className="w-full h-full lg:[50vh] sm:h-screen md:w-1/3 lg:w-1/4 p-4 md:p-8 bg-gray-800 border-b md:border-b-0 md:border-r border-gray-700 overflow-y-auto"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         <style dangerouslySetInnerHTML={{__html: `
@@ -298,7 +298,7 @@ export default function App() {
       </aside>
 
       {/* Main content area */}
-      <main className="flex-1 w-full md:w-2/3 lg:w-3/4 flex flex-col p-4 md:p-8 overflow-hidden relative min-h-[50vh]">
+      <main className="flex-1 w-full h-screen lg:h-screen md:w-2/3 lg:w-3/4 flex flex-col p-4 md:p-8 overflow-hidden relative h-full">
         <AnimatePresence mode="wait">
           {selectedTab === 'portfolio' && (
             <motion.div
